@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static wooteco.team.ittabi.legenoaroundhere.constants.UserTestConstants.TEST_EMAIL;
 import static wooteco.team.ittabi.legenoaroundhere.constants.UserTestConstants.TEST_ID;
-import static wooteco.team.ittabi.legenoaroundhere.constants.UserTestConstants.TEST_NAME;
+import static wooteco.team.ittabi.legenoaroundhere.constants.UserTestConstants.TEST_NICKNAME;
 import static wooteco.team.ittabi.legenoaroundhere.constants.UserTestConstants.TEST_PASSWORD;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -42,15 +42,12 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("회원 가입 요청/응답 테스트")
+    @DisplayName("회원 가입 요청/응답")
     public void join() throws Exception {
-        User mockUser = mock(User.class);
-        given(mockUser.getId()).willReturn(TEST_ID);
-
-        given(userService.createUser(any())).willReturn(mockUser);
+        given(userService.createUser(any())).willReturn(TEST_ID);
 
         String inputJson = "{\"email\":\"" + TEST_EMAIL + "\"," +
-            "\"nickname\":\"" + TEST_NAME + "\"," +
+            "\"nickname\":\"" + TEST_NICKNAME + "\"," +
             "\"password\":\"" + TEST_PASSWORD + "\"}";
 
         this.mockMvc.perform(post("/join")
@@ -59,5 +56,23 @@ class UserControllerTest {
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated())
             .andDo(print());
+    }
+
+    @Test
+    @DisplayName("로그인 요청")
+    public void login() throws Exception {
+        String inputJson = "{\"email\":\"" + TEST_EMAIL + "\"," +
+            "\"password\":\"" + TEST_PASSWORD + "\"}";
+
+        String responseBody = this.mockMvc.perform(post("/login")
+            .content(inputJson)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        System.out.println(responseBody);
     }
 }

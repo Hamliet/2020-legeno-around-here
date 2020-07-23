@@ -2,7 +2,7 @@ package wooteco.team.ittabi.legenoaroundhere.acceptanceTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static wooteco.team.ittabi.legenoaroundhere.constants.UserTestConstants.TEST_EMAIL;
-import static wooteco.team.ittabi.legenoaroundhere.constants.UserTestConstants.TEST_NAME;
+import static wooteco.team.ittabi.legenoaroundhere.constants.UserTestConstants.TEST_NICKNAME;
 import static wooteco.team.ittabi.legenoaroundhere.constants.UserTestConstants.TEST_PASSWORD;
 
 import io.restassured.RestAssured;
@@ -21,6 +21,7 @@ import wooteco.team.ittabi.legenoaroundhere.dto.TokenResponse;
 public class UserAcceptanceTest {
 
     private static final String USER_LOCATION_FORMAT = "^/users/[1-9][0-9]*$";
+    public static final int TOKEN_MIN_SIZE = 1;
 
     @LocalServerPort
     public int port;
@@ -35,42 +36,38 @@ public class UserAcceptanceTest {
     }
 
     /**
-     * Feature: 회원관리
-     * Scenario: 회원을 관리한다.
-     *
-     * When 회원 가입 요청을 한다.
-     * Then 회원으로 가입이되었다.
-     *
-     * When 로그인을 한다.
-     * Then 로그인이 되었다.
-     *
-     * When 내 정보를 조회한다.
-     * Then 내 정보가 조회된다.
-     *
-     * When 내 정보를 수정한다.
-     * Then 내 정보가 수정된다.
-     *
-     * When 로그아웃을 한다.
-     * Then 로그아웃이 된다.
-     *
-     * Given 로그인이 되어있는 상태이다.
-     * When 회원 탈퇴 요청을 한다.
-     * Then 회원 탈퇴가 되었다.
+     * Feature: 회원관리 Scenario: 회원을 관리한다.
+     * <p>
+     * When 회원 가입 요청을 한다. Then 회원으로 가입이되었다.
+     * <p>
+     * When 로그인을 한다. Then 로그인이 되었다.
+     * <p>
+     * When 내 정보를 조회한다. Then 내 정보가 조회된다.
+     * <p>
+     * When 내 정보를 수정한다. Then 내 정보가 수정된다.
+     * <p>
+     * When 로그아웃을 한다. Then 로그아웃이 된다.
+     * <p>
+     * Given 로그인이 되어있는 상태이다. When 회원 탈퇴 요청을 한다. Then 회원 탈퇴가 되었다.
      */
     @Test
     public void manageUser() {
-        String location = createUser(TEST_EMAIL, TEST_NAME, TEST_PASSWORD);
+        String location = createUser(TEST_EMAIL, TEST_NICKNAME, TEST_PASSWORD);
         // Todo: 내 정보 조회 api 구현 후, 조회가 잘 되는지 확인하는 코드로 바꿀 것.
         assertThat(location).matches(USER_LOCATION_FORMAT);
 
         // Todo: 로그인
-        
+        TokenResponse tokenResponse = login(TEST_EMAIL, TEST_PASSWORD);
+        assertThat(tokenResponse).isNotNull();
+        assertThat(tokenResponse.getAccessToken())
+            .hasSizeGreaterThanOrEqualTo(TOKEN_MIN_SIZE);
+
         // Todo: 내 정보 조회
-        
+
         // Todo: 내 정보 수정
-        
+
         // Todo: 로그아웃
-        
+
         // Todo: 회원 탈퇴
     }
 
@@ -85,9 +82,9 @@ public class UserAcceptanceTest {
                 body(params).
                 contentType(MediaType.APPLICATION_JSON_VALUE).
                 accept(MediaType.APPLICATION_JSON_VALUE).
-            when().
+                when().
                 post("/join").
-            then().
+                then().
                 statusCode(HttpStatus.CREATED.value()).
                 extract().header("Location");
     }
@@ -102,9 +99,9 @@ public class UserAcceptanceTest {
                 body(params).
                 contentType(MediaType.APPLICATION_JSON_VALUE).
                 accept(MediaType.APPLICATION_JSON_VALUE).
-            when().
+                when().
                 post("/login").
-            then().
+                then().
                 log().all().
                 statusCode(HttpStatus.OK.value()).
                 extract().as(TokenResponse.class);
